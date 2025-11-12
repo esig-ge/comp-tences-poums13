@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connexion – Barber Booking</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Barber Booking</h1>
+  </header>
+
+  <main class="container auth">
+    <h2>Se connecter</h2>
+    <!-- Simule la connexion : renvoie vers l'accueil -->
+    <form class="form form--narrow" action="index.html" method="get" novalidate>
+      <label for="username">Nom d’utilisateur</label>
+      <input type="text" id="username" name="username" placeholder="jean.dupont" autocomplete="username" required>
+
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" name="password" placeholder="Mot de passe" autocomplete="current-password" required>
+
+      <button type="submit" class="btn btn--primary">Se connecter</button>
+    </form>
+    <p class="note">Accès réservé aux employés du salon.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Barber Booking</p>
+    <!-- Sur la page login, pas de bouton de déconnexion -->
+  </footer>
+</body>
+</html>

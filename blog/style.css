@@ -1,0 +1,40 @@
+/* Reset léger */
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;color:#333;background:#f5f5f5;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none}
+
+/* Layout */
+.container{width:100%;max-width:960px;margin:0 auto;padding:2rem 1rem}
+.site-header{background:#222;color:#fff;padding:1.25rem 1rem}
+.site-header h1{margin:0 0 .5rem}
+.site-nav a{color:#fff;margin-right:1rem}
+.site-nav a:hover{text-decoration:underline}
+.site-footer{margin-top:auto;background:#222;color:#fff;padding:1rem;display:flex;justify-content:space-between;align-items:center}
+
+/* Home */
+.home{text-align:center}
+.buttons{display:flex;gap:1rem;justify-content:center;margin-top:1rem}
+
+/* Cards / list */
+.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1rem}
+.card{background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.card__header{padding:1rem 1rem .5rem}
+.card__body{padding:0 1rem 1rem}
+.card__footer{padding:1rem;border-top:1px solid #eee;display:flex;gap:.5rem}
+
+/* Forms */
+.form{display:grid;gap:.75rem;background:#fff;border-radius:8px;padding:1.25rem;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.form--narrow{max-width:420px;margin:2rem auto}
+.form label{font-weight:600}
+.form input,.form select,.form textarea{width:100%;padding:.6rem;border:1px solid #ccc;border-radius:6px}
+.form button{margin-top:.5rem}
+.auth{text-align:center}
+.note{color:#555;margin-top:1rem}
+
+/* Buttons */
+.btn{display:inline-block;padding:.65rem 1.1rem;border-radius:6px;background:#e0e0e0;color:#111;font-weight:600}
+.btn--primary{background:#007bff;color:#fff}
+.btn--primary:hover{background:#0056b3}
+.btn--danger{background:#d9534f;color:#fff}
+.btn--danger:hover{background:#b52b27}
+.btn--small{padding:.4rem .8rem;font-size:.9rem}
