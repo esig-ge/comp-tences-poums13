@@ -31,7 +31,7 @@
                         <td>{{ appt.time|time:"H:i" }}</td>
                         <td>{{ appt.notes }}</td>
                         <td class="actions">
-                            <!-- MODIFIER : remplit le formulaire -->
+                            <!-- MODIFIER -->
                             <button type="button" class="btn small ghost"
                                     onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
                                                              '{{ appt.date }}', '{{ appt.time }}',
@@ -55,7 +55,7 @@
         </div>
     </section>
 
-    <!-- FORMULAIRE AJOUT / MODIF (avec Django Form) -->
+    <!-- FORMULAIRE AJOUT / MODIF -->
     <section class="card" id="form-section">
         <div class="card-header">
             <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
