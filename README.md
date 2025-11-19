@@ -23,7 +23,7 @@
     2) Django 5
     3) SQLite
     4) HTML / CSS (template + héritage Django)
-    5) Déploiement en ligne (remplacer par Render, PythonAnywhere, Railway…)
+    5) Déploiement en ligne (Render)
 
 🌐 Lien du repository et du tag final
 
