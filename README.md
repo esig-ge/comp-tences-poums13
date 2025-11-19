@@ -15,7 +15,7 @@
     C) Modification d'un rendez-vous
     D) Suppression d'un rendez-vous
     E) Validation côté serveur
-    G) ORM Django
+    F) ORM Django
 
 🛠️ Technologies utilisées
 
@@ -28,7 +28,6 @@
 🌐 Lien du repository et du tag final
 
 Repo GitHub : https://github.com/esig-ge/comp-tences-poums13.git
-
 
 Dernier tag : https://github.com/esig-ge/comp-tences-poums13/releases/tag/BarberWeb
 
