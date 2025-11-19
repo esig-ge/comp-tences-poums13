@@ -31,7 +31,7 @@
 Repo GitHub : https://github.com/esig-ge/comp-tences-poums13.git
 
 
-Dernier tag : 
+Dernier tag : https://github.com/esig-ge/comp-tences-poums13/releases/tag/BarberWeb
 
 📚 Sources utilisées
 
