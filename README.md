@@ -10,13 +10,12 @@
 
 📌 Fonctionnalités principales
 
-    A) Liste des rendez-vous (Lecture)
-    B) Ajout d’un rendez-vous (Création)
-    C) Modification (préremplissage du formulaire)
-    D) Suppression
-    E) Validation côté serveur (Django Forms)
-    F) Interface élégante thème beige/brun type iOS
-    G) ORM Django (aucune SQL manuelle)
+    A) Liste des rendez-vous
+    B) Ajout d’un rendez-vous
+    C) Modification d'un rendez-vous
+    D) Suppression d'un rendez-vous
+    E) Validation côté serveur
+    G) ORM Django
 
 🛠️ Technologies utilisées
 
