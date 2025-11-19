@@ -1,28 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Barber Booking</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Barber – Gestion des rendez-vous</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="site-header">
-    <h1>Barber Booking</h1>
-    <nav class="site-nav" aria-label="Navigation principale">
-      <a href="reservations.html">Mes réservations</a>
-      <a href="nouvelle.html">Nouvelle réservation</a>
-    </nav>
-  </header>
+<header class="topbar">
+    <div class="topbar-left">
+        <div class="logo">Barber Studio</div>
+    </div>
+</header>
 
-  <main class="home container">
-    <h2>Bienvenue</h2>
-    <p>Gérez vos rendez-vous simplement.</p>
-  </main>
+<main class="page">
+    <div class="container">
 
-  <footer class="site-footer">
-    <p>&copy; 2025 Barber Booking</p>
-    <a href="login.html" class="btn btn--danger btn--small">Se déconnecter</a>
-  </footer>
+        <section class="content">
+            <section class="card">
+                <div class="card-header">
+                    <div>
+                        <h1>Planning de rendez-vous</h1>
+                    </div>
+                    <button type="button" class="btn primary"
+                            onclick="document.getElementById('form-section').scrollIntoView({behavior: 'smooth'});">
+                        + Nouveau rendez-vous
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Heure</th>
+                            <th>Commentaires</th>
+                            <th class="th-actions">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Exemple de rendez-vous (à générer dynamiquement côté serveur) -->
+                        <tr>
+                            <td>
+                                <span class="client-name">Jean Dupont</span>
+                            </td>
+                            <td>21.11.2025</td>
+                            <td>10:30</td>
+                            <td>Préfère cheveux courts sur les côtés</td>
+                            <td class="actions">
+                                <!-- UPDATE -->
+                                <form method="get" action="/appointments/edit/1">
+                                    <button type="submit" class="btn small ghost">Modifier</button>
+                                </form>
+                                <!-- DELETE -->
+                                <form method="post" action="/appointments/delete/1">
+                                    <button type="submit" class="btn small danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span class="client-name">Sarah Martin</span>
+                            </td>
+                            <td>21.11.2025</td>
+                            <td>11:15</td>
+                            <td></td>
+                            <td class="actions">
+                                <form method="get" action="/appointments/edit/2">
+                                    <button type="submit" class="btn small ghost">Modifier</button>
+                                </form>
+                                <form method="post" action="/appointments/delete/2">
+                                    <button type="submit" class="btn small danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <!-- Fin exemples -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card" id="form-section">
+                <div class="card-header">
+                    <div>
+                        <h2>Ajouter / Modifier un rendez-vous</h2>
+                    </div>
+                </div>
+
+                <form method="post" action="/appointments/save" class="form-grid">
+                    <input type="hidden" name="id" value="">
+
+                    <div class="form-group">
+                        <label for="client">Nom du client</label>
+                        <input type="text" id="client" name="client" placeholder="Nom du client" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time">Heure</label>
+                        <input type="time" id="time" name="time" required>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="notes">Commentaires</label>
+                        <textarea id="notes" name="notes" rows="3" placeholder="Notes pour ce client (optionnel)"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Enregistrer</button>
+                        <button type="reset" class="btn ghost">Annuler</button>
+                    </div>
+                </form>
+            </section>
+        </section>
+    </div>
+</main>
 </body>
 </html>
