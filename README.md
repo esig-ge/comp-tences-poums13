@@ -5,7 +5,7 @@
     Cette application permet de gérer les rendez-vous d’un barber via une interface unique intégrant un CRUD complet.
     Elle utilise Django et le pattern MTV, un ModelForm pour la validation serveur, l’ORM pour les interactions avec la base de données, et un système de templates avec héritage.
   L’application est accessible en ligne à l’adresse suivante :
-👉 http://127.0.0.1:8000/
+👉 https://barberweb.onrender.com/
  
 
 📌 Fonctionnalités principales
@@ -22,7 +22,7 @@
 
     1) Python 3
     2) Django 5
-    3) SQLite (dev)
+    3) SQLite
     4) HTML / CSS (template + héritage Django)
     5) Déploiement en ligne (remplacer par Render, PythonAnywhere, Railway…)
 
