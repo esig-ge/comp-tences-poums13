@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Barber – Gestion des rendez-vous</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'blog/style.css' %}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="topbar-left">
+        <div class="logo">Barber Studio</div>
+    </div>
+</header>
+
+<main class="page">
+    <div class="container">
+
+        <section class="content">
+
+            <!-- LISTE DES RENDEZ-VOUS -->
+            <section class="card">
+                <div class="card-header">
+                    <div><h1>Planning de rendez-vous</h1></div>
+                    <button type="button" class="btn primary"
+                            onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'});">
+                        + Nouveau rendez-vous
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Date</th>
+                            <th>Heure</th>
+                            <th>Commentaires</th>
+                            <th class="th-actions">Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for appt in appointments %}
+                        <tr>
+                            <td><span class="client-name">{{ appt.client }}</span></td>
+                            <td>{{ appt.date }}</td>
+                            <td>{{ appt.time }}</td>
+                            <td>{{ appt.notes }}</td>
+                            <td class="actions">
+
+                                <!-- BOUTON MODIFIER (remplit le formulaire sans quitter la page) -->
+                                <button type="button" class="btn small ghost"
+                                        onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
+                                                                   '{{ appt.date }}', '{{ appt.time }}',
+                                                                   `{{ appt.notes|default:'' }}`)">
+                                    Modifier
+                                </button>
+
+                                <!-- SUPPRIMER -->
+                                <form method="post" style="display:inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete_id" value="{{ appt.id }}">
+                                    <button type="submit" class="btn small danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5">Aucun rendez-vous pour l’instant.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- FORMULAIRE AJOUT / MODIFICATION -->
+            <section class="card" id="form-section">
+                <div class="card-header">
+                    <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
+                </div>
+
+                <form method="post" class="form-grid">
+                    {% csrf_token %}
+
+                    <!-- Pour différencier création / modification -->
+                    <input type="hidden" name="id" id="form-id" value="">
+
+                    <div class="form-group">
+                        <label for="client">Nom du client</label>
+                        <input type="text" id="client" name="client" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time">Heure</label>
+                        <input type="time" id="time" name="time" required>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="notes">Commentaires</label>
+                        <textarea id="notes" name="notes" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Enregistrer</button>
+                        <button type="button" class="btn ghost" onclick="resetForm()">Annuler</button>
+                    </div>
+                </form>
+            </section>
+
+        </section>
+    </div>
+</main>
+
+<!-- SCRIPT POUR REMPLIR LE FORMULAIRE -->
+<script>
+function editAppointment(id, client, date, time, notes) {
+    document.getElementById("form-title").innerText = "Modifier un rendez-vous";
+    document.getElementById("form-id").value = id;
+    document.getElementById("client").value = client;
+    document.getElementById("date").value = date;
+    document.getElementById("time").value = time;
+    document.getElementById("notes").value = notes;
+
+    document.getElementById("form-section").scrollIntoView({behavior: 'smooth'});
+}
+
+function resetForm() {
+    document.getElementById("form-title").innerText = "Ajouter un rendez-vous";
+    document.getElementById("form-id").value = "";
+    document.getElementById("client").value = "";
+    document.getElementById("date").value = "";
+    document.getElementById("time").value = "";
+    document.getElementById("notes").value = "";
+}
+</script>
+
+</body>
+</html>
