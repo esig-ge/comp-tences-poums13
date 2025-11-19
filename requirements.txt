@@ -1,1 +1,5 @@
 Django~=5.1.2
+gunicorn
+whitenoise
+django-environ
+psycopg2-binary
