@@ -1,22 +1,35 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from .models import Appointment
+from .forms import AppointmentForm
 
-def appointment_list(request):
-    # CREATE
-    if request.method == "POST":
-        client = request.POST.get("client")
-        date = request.POST.get("date")
-        time = request.POST.get("time")
-        notes = request.POST.get("notes", "")
+def index(request):
+    # SUPPRESSION
+    if request.method == "POST" and "delete_id" in request.POST:
+        Appointment.objects.filter(id=request.POST["delete_id"]).delete()
+        return redirect("index")
 
-        Appointment.objects.create(
-            client=client,
-            date=date,
-            time=time,
-            notes=notes,
-        )
-        return redirect("appointment_list")
+    form = None
 
-    # READ
+    # AJOUT / MODIFICATION AVEC VALIDATION
+    if request.method == "POST" and "delete_id" not in request.POST:
+        appt_id = request.POST.get("id")
+
+        if appt_id:
+            appt = Appointment.objects.get(pk=appt_id)
+            form = AppointmentForm(request.POST, instance=appt)
+        else:
+            form = AppointmentForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect("index")
+        # si invalide → redisplay avec erreurs
+
+    if form is None:
+        form = AppointmentForm()
+
     appointments = Appointment.objects.order_by("date", "time")
-    return render(request, "appointments_list.html", {"appointments": appointments})
+    return render(request, "blog/index.html", {
+        "appointments": appointments,
+        "form": form,
+    })

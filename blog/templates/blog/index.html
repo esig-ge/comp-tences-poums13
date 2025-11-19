@@ -1,146 +1,122 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Barber – Gestion des rendez-vous</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'blog/style.css' %}">
-</head>
+{% extends "blog/base.html" %}
 
-<body>
+{% block title %}Planning – BarberWeb{% endblock %}
 
-<header class="topbar">
-    <div class="topbar-left">
-        <div class="logo">Barber Studio</div>
-    </div>
-</header>
+{% block content %}
 
-<main class="page">
-    <div class="container">
+<section class="content">
+    <section class="card">
+        <div class="card-header">
+            <div>
+                <h1>Planning de rendez-vous</h1>
+            </div>
+        </div>
 
-        <section class="content">
+        <div class="table-wrapper">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Commentaires</th>
+                    <th class="th-actions">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for appt in appointments %}
+                    <tr>
+                        <td><span class="client-name">{{ appt.client }}</span></td>
+                        <td>{{ appt.date|date:"d/m/Y" }}</td>
+                        <td>{{ appt.time|time:"H:i" }}</td>
+                        <td>{{ appt.notes }}</td>
+                        <td class="actions">
+                            <!-- MODIFIER : remplit le formulaire -->
+                            <button type="button" class="btn small ghost"
+                                    onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
+                                                             '{{ appt.date }}', '{{ appt.time }}',
+                                                             `{{ appt.notes|default:'' }}`)">
+                                Modifier
+                            </button>
 
-            <!-- LISTE DES RENDEZ-VOUS -->
-            <section class="card">
-                <div class="card-header">
-                    <div><h1>Planning de rendez-vous</h1></div>
-                    <button type="button" class="btn primary"
-                            onclick="document.getElementById('form-section').scrollIntoView({behavior:'smooth'});">
-                        + Nouveau rendez-vous
-                    </button>
-                </div>
+                            <!-- SUPPRIMER -->
+                            <form method="post" style="display:inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="delete_id" value="{{ appt.id }}">
+                                <button type="submit" class="btn small danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Aucun rendez-vous pour l’instant.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-                <div class="table-wrapper">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Client</th>
-                            <th>Date</th>
-                            <th>Heure</th>
-                            <th>Commentaires</th>
-                            <th class="th-actions">Actions</th>
-                        </tr>
-                        </thead>
+    <!-- FORMULAIRE AJOUT / MODIF (avec Django Form) -->
+    <section class="card" id="form-section">
+        <div class="card-header">
+            <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
+        </div>
 
-                        <tbody>
-                        {% for appt in appointments %}
-                        <tr>
-                            <td><span class="client-name">{{ appt.client }}</span></td>
-                            <td>{{ appt.date }}</td>
-                            <td>{{ appt.time }}</td>
-                            <td>{{ appt.notes }}</td>
-                            <td class="actions">
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <!-- champ caché pour l'id -->
+            <input type="hidden" name="id" id="form-id" value="">
 
-                                <!-- BOUTON MODIFIER (remplit le formulaire sans quitter la page) -->
-                                <button type="button" class="btn small ghost"
-                                        onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
-                                                                   '{{ appt.date }}', '{{ appt.time }}',
-                                                                   `{{ appt.notes|default:'' }}`)">
-                                    Modifier
-                                </button>
+            <div class="form-group">
+                <label for="{{ form.client.id_for_label }}">Nom du client</label>
+                {{ form.client }}
+                {{ form.client.errors }}
+            </div>
 
-                                <!-- SUPPRIMER -->
-                                <form method="post" style="display:inline">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="delete_id" value="{{ appt.id }}">
-                                    <button type="submit" class="btn small danger">Supprimer</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="5">Aucun rendez-vous pour l’instant.</td></tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <div class="form-group">
+                <label for="{{ form.date.id_for_label }}">Date</label>
+                {{ form.date }}
+                {{ form.date.errors }}
+            </div>
 
-            <!-- FORMULAIRE AJOUT / MODIFICATION -->
-            <section class="card" id="form-section">
-                <div class="card-header">
-                    <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
-                </div>
+            <div class="form-group">
+                <label for="{{ form.time.id_for_label }}">Heure</label>
+                {{ form.time }}
+                {{ form.time.errors }}
+            </div>
 
-                <form method="post" class="form-grid">
-                    {% csrf_token %}
+            <div class="form-group full">
+                <label for="{{ form.notes.id_for_label }}">Commentaires</label>
+                {{ form.notes }}
+                {{ form.notes.errors }}
+            </div>
 
-                    <!-- Pour différencier création / modification -->
-                    <input type="hidden" name="id" id="form-id" value="">
+            <div class="form-actions">
+                <button type="submit" class="btn primary">Enregistrer</button>
+                <button type="button" class="btn ghost" onclick="resetForm()">Annuler</button>
+            </div>
+        </form>
+    </section>
+</section>
 
-                    <div class="form-group">
-                        <label for="client">Nom du client</label>
-                        <input type="text" id="client" name="client" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="date">Date</label>
-                        <input type="date" id="date" name="date" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="time">Heure</label>
-                        <input type="time" id="time" name="time" required>
-                    </div>
-
-                    <div class="form-group full">
-                        <label for="notes">Commentaires</label>
-                        <textarea id="notes" name="notes" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn primary">Enregistrer</button>
-                        <button type="button" class="btn ghost" onclick="resetForm()">Annuler</button>
-                    </div>
-                </form>
-            </section>
-
-        </section>
-    </div>
-</main>
-
-<!-- SCRIPT POUR REMPLIR LE FORMULAIRE -->
 <script>
 function editAppointment(id, client, date, time, notes) {
     document.getElementById("form-title").innerText = "Modifier un rendez-vous";
     document.getElementById("form-id").value = id;
-    document.getElementById("client").value = client;
-    document.getElementById("date").value = date;
-    document.getElementById("time").value = time;
-    document.getElementById("notes").value = notes;
-
+    document.getElementById("id_client").value = client;
+    document.getElementById("id_date").value = date;
+    document.getElementById("id_time").value = time;
+    document.getElementById("id_notes").value = notes;
     document.getElementById("form-section").scrollIntoView({behavior: 'smooth'});
 }
 
 function resetForm() {
     document.getElementById("form-title").innerText = "Ajouter un rendez-vous";
     document.getElementById("form-id").value = "";
-    document.getElementById("client").value = "";
-    document.getElementById("date").value = "";
-    document.getElementById("time").value = "";
-    document.getElementById("notes").value = "";
+    document.getElementById("id_client").value = "";
+    document.getElementById("id_date").value = "";
+    document.getElementById("id_time").value = "";
+    document.getElementById("id_notes").value = "";
 }
 </script>
 
-</body>
-</html>
+{% endblock %}
