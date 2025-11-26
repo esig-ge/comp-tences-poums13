@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load static %}
 
 {% block title %}Planning – BarberWeb{% endblock %}
 
@@ -9,6 +10,16 @@
         <div class="card-header">
             <div>
                 <h1>Planning de rendez-vous</h1>
+            </div>
+
+            <!-- Barre d’actions JS / AJAX -->
+            <div class="card-actions">
+                <button type="button" class="btn small ghost" id="refresh-ajax">
+                    Recharger la liste (AJAX)
+                </button>
+                <button type="button" class="btn small ghost" id="async-demo">
+                    Démo asynchronisme (console)
+                </button>
             </div>
         </div>
 
@@ -23,7 +34,8 @@
                     <th class="th-actions">Actions</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="appointments-body">
+                {# contenu initial rendu côté serveur, remplacé ensuite par le JS en cas de clic sur le bouton AJAX #}
                 {% for appt in appointments %}
                     <tr>
                         <td><span class="client-name">{{ appt.client }}</span></td>
@@ -61,7 +73,7 @@
             <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
         </div>
 
-        <form method="post" class="form-grid">
+        <form method="post" class="form-grid" id="appointment-form">
             {% csrf_token %}
             <!-- champ caché pour l'id -->
             <input type="hidden" name="id" id="form-id" value="">
@@ -118,5 +130,8 @@ function resetForm() {
     document.getElementById("id_notes").value = "";
 }
 </script>
+
+<!-- Inclusion du JS dédié (DOM + AJAX) -->
+<script src="{% static 'blog/js/barber.js' %}"></script>
 
 {% endblock %}
