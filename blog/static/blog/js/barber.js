@@ -3,8 +3,8 @@
 // - Manipulation du DOM (création de nœuds)
 // - Callbacks d'événements
 // - Fonctions passées en paramètre
-// - AJAX (fetch) vers /api/appointments/ (lecture BDD)
-// - Démonstration d'asynchronisme
+// - AJAX (fetch) vers /api/appointments/ (lecture BDD + filtres)
+// - Démonstration d'asynchronisme via les logs A / C / B
 
 (function () {
     // Objet de configuration (critère: objets)
@@ -16,14 +16,18 @@
     // Sélection des éléments DOM importants
     const tableBody = document.getElementById("appointments-body");
     const refreshButton = document.getElementById("refresh-ajax");
-    const asyncDemoButton = document.getElementById("async-demo");
+    const filterDateInput = document.getElementById("filter-date");
+    const filterClientInput = document.getElementById("filter-client");
+
+    // Token CSRF récupéré depuis un formulaire existant
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    const csrfToken = csrfInput ? csrfInput.value : null;
 
     // Tableau en mémoire pour garder la dernière liste (critère: tableaux)
     let cachedAppointments = [];
 
     // Sécurité : si la page ne contient pas ces éléments, on ne fait rien
     if (!tableBody || !refreshButton) {
-        // Condition (critère: conditions)
         console.warn("barber.js: éléments DOM manquants, script interrompu.");
         return;
     }
@@ -31,27 +35,23 @@
     /**
      * Rend tous les rendez-vous dans le DOM.
      * - Supprime les anciennes lignes
-     * - Ajoute de nouvelles lignes <tr> / <td> (critère : modification significative du DOM)
+     * - Ajoute de nouvelles lignes <tr> / <td>
+     * - Reconstruit la colonne "Actions" avec Modifier / Supprimer
      */
     function renderAppointments(appointments) {
-        // Mise à jour du cache
         cachedAppointments = appointments;
-
-        // On vide le tbody
         tableBody.innerHTML = "";
 
         if (appointments.length === 0) {
-            // Condition + création de nœuds
             const row = document.createElement("tr");
             const cell = document.createElement("td");
             cell.colSpan = 5;
-            cell.textContent = "Aucun rendez-vous (chargés via AJAX).";
+            cell.textContent = "Aucun rendez-vous trouvé avec ces filtres (AJAX).";
             row.appendChild(cell);
             tableBody.appendChild(row);
             return;
         }
 
-        // Boucle sur le tableau (critère: boucles + tableaux)
         appointments.forEach((appt) => {
             const tr = document.createElement("tr");
 
@@ -61,7 +61,6 @@
             clientSpan.classList.add("client-name");
             clientSpan.textContent = appt.client;
 
-            // Exemple de condition + utilisation d'un tableau dans l'objet config
             if (config.highlightImportantClients &&
                 config.importantClients.includes(appt.client)) {
                 clientSpan.style.fontWeight = "bold";
@@ -85,28 +84,72 @@
             notesTd.textContent = appt.notes || "";
             tr.appendChild(notesTd);
 
-            // Actions : ici on met juste un texte indicatif.
-            // Les vraies actions (modifier/supprimer) existent déjà dans le HTML côté serveur.
+            // Actions
             const actionsTd = document.createElement("td");
             actionsTd.classList.add("actions");
-            actionsTd.textContent = "Actions disponibles via le formulaire classique.";
-            tr.appendChild(actionsTd);
 
-            // Ajout de la ligne au DOM (critère: ajout de nœuds)
+            if (!csrfToken) {
+                actionsTd.textContent = "Actions disponibles via le formulaire classique.";
+            } else {
+                // Bouton MODIFIER : réutilise editAppointment (globale définie dans index.html)
+                const editBtn = document.createElement("button");
+                editBtn.type = "button";
+                editBtn.classList.add("btn", "small", "ghost");
+                editBtn.textContent = "Modifier";
+
+                editBtn.addEventListener("click", function () {
+                    if (typeof editAppointment === "function") {
+                        editAppointment(
+                            appt.id,
+                            appt.client,
+                            appt.date,       // ISO YYYY-MM-DD
+                            appt.time,       // HH:MM
+                            appt.notes || ""
+                        );
+                    } else {
+                        console.warn("editAppointment n'est pas défini.");
+                    }
+                });
+
+                actionsTd.appendChild(editBtn);
+
+                // Formulaire SUPPRIMER (POST classique)
+                const deleteForm = document.createElement("form");
+                deleteForm.method = "post";
+                deleteForm.style.display = "inline";
+
+                const csrfField = document.createElement("input");
+                csrfField.type = "hidden";
+                csrfField.name = "csrfmiddlewaretoken";
+                csrfField.value = csrfToken;
+                deleteForm.appendChild(csrfField);
+
+                const deleteIdField = document.createElement("input");
+                deleteIdField.type = "hidden";
+                deleteIdField.name = "delete_id";
+                deleteIdField.value = appt.id;
+                deleteForm.appendChild(deleteIdField);
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.type = "submit";
+                deleteBtn.classList.add("btn", "small", "danger");
+                deleteBtn.textContent = "Supprimer";
+
+                deleteForm.appendChild(deleteBtn);
+                actionsTd.appendChild(deleteForm);
+            }
+
+            tr.appendChild(actionsTd);
             tableBody.appendChild(tr);
         });
     }
 
     /**
-     * Fonction utilitaire qui prend une fonction en paramètre
-     * et la déclenche après avoir loggé une action.
-     *
-     * -> Critère : "passer des fonctions en paramètre"
+     * Fonction utilitaire : log + exécution d'un callback.
      */
     function withLogging(actionName, callback) {
         console.log("[BarberWeb]", actionName);
 
-        // Condition + vérification que callback est bien une fonction
         if (typeof callback === "function") {
             callback();
         } else {
@@ -115,16 +158,28 @@
     }
 
     /**
-     * Récupère les rendez-vous via AJAX (fetch) puis appelle un callback avec les données.
-     * - Critère : AJAX simple (sans jQuery)
-     * - Critère : appel AJAX qui dialogue avec la BDD
+     * Appel AJAX avec filtres (date, client).
+     * - Critère : AJAX natif, JSON structuré, BDD
      */
-    function fetchAppointmentsWithCallback(onSuccess) {
-        fetch("/api/appointments/")
+    function fetchAppointmentsWithCallback(onSuccess, filters) {
+        let url = "/api/appointments/";
+        const params = new URLSearchParams();
+
+        if (filters && filters.date) {
+            params.append("date", filters.date);
+        }
+        if (filters && filters.client) {
+            params.append("client", filters.client);
+        }
+
+        const queryString = params.toString();
+        if (queryString) {
+            url += "?" + queryString;
+        }
+
+        fetch(url)
             .then((response) => response.json())
             .then((data) => {
-                // data.appointments est un tableau d'objets JSON
-                // Critère : données non triviales structurées (liste d'objets JSON)
                 const appointments = data.appointments || [];
 
                 if (typeof onSuccess === "function") {
@@ -137,59 +192,30 @@
     }
 
     /**
-     * Callback d'événement : déclenché quand l'utilisateur clique sur
-     * le bouton "Recharger la liste (AJAX)".
-     *
-     * -> Critère : modification du DOM en réaction à un événement utilisateur.
+     * Callback d'événement : clic sur "Filtrer (AJAX)".
+     * - Démo d'asynchronisme : logs A / C / B
      */
     function handleRefreshClick() {
+        const filterDate = filterDateInput ? filterDateInput.value : "";
+        const filterClient = filterClientInput ? filterClientInput.value.trim() : "";
+
         console.log("Avant l'appel AJAX (A)");
 
-        // Exemple clair de fonctions de rappel (callback) :
-        // on passe renderAppointments comme paramètre à fetchAppointmentsWithCallback,
-        // encapsulé dans withLogging pour montrer la composition.
         fetchAppointmentsWithCallback(function (appointments) {
             console.log("Réponse AJAX reçue (B)");
 
-            // Exemple de fonction passée en paramètre via withLogging
-            withLogging("Rendu des rendez-vous", function () {
+            withLogging("Rendu des rendez-vous filtrés", function () {
                 renderAppointments(appointments);
             });
+        }, {
+            date: filterDate,
+            client: filterClient
         });
 
         console.log("Après l'appel fetch (C – s'affiche AVANT B => asynchronisme)");
     }
 
-    /**
-     * Démo d'asynchronisme claire.
-     * A lancer via le bouton "Démo asynchronisme (console)".
-     *
-     * Tu pourras montrer en direct dans la console :
-     * - "début (1)"
-     * - "fin immédiate (3)"
-     * - puis "dans le then (2)" lorsque la réponse arrive.
-     */
-    function handleAsyncDemoClick() {
-        console.log("Démo asynchronisme : début (1)");
-
-        fetch("/api/appointments/")
-            .then(() => {
-                console.log("Démo asynchronisme : dans le then (2)");
-            });
-
-        console.log("Démo asynchronisme : fin immédiate (3)");
-    }
-
-    // Enregistrement des gestionnaires d'événements (event handlers)
-    // -> Critère : au moins une fonction de rappel pour gérer des événements.
+    // Callback d'événement : clic utilisateur
     refreshButton.addEventListener("click", handleRefreshClick);
 
-    if (asyncDemoButton) {
-        asyncDemoButton.addEventListener("click", handleAsyncDemoClick);
-    }
-
-    // Remarque importante :
-    // - Ici, on ne modifie pas le DOM au chargement (on se contente d'attacher des événements).
-    // - La modification significative du DOM (création de <tr>/<td>) se fait
-    //   uniquement après un clic utilisateur sur le bouton AJAX, ce qui respecte le critère.
 })();

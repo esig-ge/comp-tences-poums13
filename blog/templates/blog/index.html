@@ -12,13 +12,19 @@
                 <h1>Planning de rendez-vous</h1>
             </div>
 
-            <!-- Barre d’actions JS / AJAX -->
-            <div class="card-actions">
+            <!-- Barre d’actions JS / AJAX avec filtres -->
+            <div class="card-actions" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <input type="date" id="filter-date">
+
+                <input
+                    type="text"
+                    id="filter-client"
+                    placeholder="Filtrer par client"
+                    style="min-width:160px;"
+                >
+
                 <button type="button" class="btn small ghost" id="refresh-ajax">
-                    Recharger la liste (AJAX)
-                </button>
-                <button type="button" class="btn small ghost" id="async-demo">
-                    Démo asynchronisme (console)
+                    Filtrer
                 </button>
             </div>
         </div>
@@ -35,7 +41,7 @@
                 </tr>
                 </thead>
                 <tbody id="appointments-body">
-                {# contenu initial rendu côté serveur, remplacé ensuite par le JS en cas de clic sur le bouton AJAX #}
+                {# contenu initial rendu côté serveur #}
                 {% for appt in appointments %}
                     <tr>
                         <td><span class="client-name">{{ appt.client }}</span></td>

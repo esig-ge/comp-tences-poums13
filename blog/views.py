@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from django.utils.dateparse import parse_date  # <-- AJOUT
 
 from .models import Appointment
 from .forms import AppointmentForm
+
 
 
 def index(request):
@@ -55,9 +57,22 @@ def api_appointments(request):
     """
     Vue API AJAX (GET) :
     - Lit les rendez-vous en base
-    - Les renvoie sous forme JSON structuré (liste d'objets)
-    -> Coche le critère : "Au moins un appel Ajax dialogue avec la base de données".
+    - Applique éventuellement des filtres (date, client)
+    - Renvoie les données sous forme JSON structurée
     """
-    appointments = Appointment.objects.order_by("date", "time")
-    data = [serialize_appointment(a) for a in appointments]
+    qs = Appointment.objects.order_by("date", "time")
+
+    # Filtre par date (YYYY-MM-DD) si ?date=... est présent
+    date_str = request.GET.get("date")
+    if date_str:
+        date_obj = parse_date(date_str)
+        if date_obj:
+            qs = qs.filter(date=date_obj)
+
+    # Filtre par client (contient, insensible à la casse) si ?client=... est présent
+    client = request.GET.get("client")
+    if client:
+        qs = qs.filter(client__icontains=client)
+
+    data = [serialize_appointment(a) for a in qs]
     return JsonResponse({"appointments": data})
