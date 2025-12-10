@@ -88,7 +88,6 @@
 
                 actionsTd.appendChild(editBtn);
 
-                // Formulaire SUPPRIMER (POST classique)
                 const deleteForm = document.createElement("form");
                 deleteForm.method = "post";
                 deleteForm.style.display = "inline";
