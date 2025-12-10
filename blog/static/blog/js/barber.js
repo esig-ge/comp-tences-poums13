@@ -1,7 +1,7 @@
 (function () {
     const config = {
         highlightImportantClients: true,
-        importantClients: ["Poums", "VIP", "Important"],
+        importantClients: ["Poumin", "VIP", "Important"],
     };
 
     const tableBody = document.getElementById("appointments-body");
