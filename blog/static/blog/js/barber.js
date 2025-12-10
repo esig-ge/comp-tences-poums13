@@ -1,43 +1,24 @@
-// barber.js
-// JavaScript pour la page de planning BarberWeb
-// - Manipulation du DOM (création de nœuds)
-// - Callbacks d'événements
-// - Fonctions passées en paramètre
-// - AJAX (fetch) vers /api/appointments/ (lecture BDD + filtres)
-// - Démonstration d'asynchronisme via les logs A / C / B
-
 (function () {
-    // Objet de configuration (critère: objets)
     const config = {
         highlightImportantClients: true,
         importantClients: ["Poums", "VIP", "Important"],
     };
 
-    // Sélection des éléments DOM importants
     const tableBody = document.getElementById("appointments-body");
     const refreshButton = document.getElementById("refresh-ajax");
     const filterDateInput = document.getElementById("filter-date");
     const filterClientInput = document.getElementById("filter-client");
 
-    // Token CSRF récupéré depuis un formulaire existant
     const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
     const csrfToken = csrfInput ? csrfInput.value : null;
 
-    // Tableau en mémoire pour garder la dernière liste (critère: tableaux)
     let cachedAppointments = [];
 
-    // Sécurité : si la page ne contient pas ces éléments, on ne fait rien
     if (!tableBody || !refreshButton) {
         console.warn("barber.js: éléments DOM manquants, script interrompu.");
         return;
     }
 
-    /**
-     * Rend tous les rendez-vous dans le DOM.
-     * - Supprime les anciennes lignes
-     * - Ajoute de nouvelles lignes <tr> / <td>
-     * - Reconstruit la colonne "Actions" avec Modifier / Supprimer
-     */
     function renderAppointments(appointments) {
         cachedAppointments = appointments;
         tableBody.innerHTML = "";
@@ -55,7 +36,6 @@
         appointments.forEach((appt) => {
             const tr = document.createElement("tr");
 
-            // Client
             const clientTd = document.createElement("td");
             const clientSpan = document.createElement("span");
             clientSpan.classList.add("client-name");
@@ -69,29 +49,24 @@
             clientTd.appendChild(clientSpan);
             tr.appendChild(clientTd);
 
-            // Date
             const dateTd = document.createElement("td");
             dateTd.textContent = appt.date_display;
             tr.appendChild(dateTd);
 
-            // Heure
             const timeTd = document.createElement("td");
             timeTd.textContent = appt.time;
             tr.appendChild(timeTd);
 
-            // Commentaires
             const notesTd = document.createElement("td");
             notesTd.textContent = appt.notes || "";
             tr.appendChild(notesTd);
 
-            // Actions
             const actionsTd = document.createElement("td");
             actionsTd.classList.add("actions");
 
             if (!csrfToken) {
                 actionsTd.textContent = "Actions disponibles via le formulaire classique.";
             } else {
-                // Bouton MODIFIER : réutilise editAppointment (globale définie dans index.html)
                 const editBtn = document.createElement("button");
                 editBtn.type = "button";
                 editBtn.classList.add("btn", "small", "ghost");
@@ -102,8 +77,8 @@
                         editAppointment(
                             appt.id,
                             appt.client,
-                            appt.date,       // ISO YYYY-MM-DD
-                            appt.time,       // HH:MM
+                            appt.date,
+                            appt.time,
                             appt.notes || ""
                         );
                     } else {
@@ -144,9 +119,6 @@
         });
     }
 
-    /**
-     * Fonction utilitaire : log + exécution d'un callback.
-     */
     function withLogging(actionName, callback) {
         console.log("[BarberWeb]", actionName);
 
@@ -157,10 +129,6 @@
         }
     }
 
-    /**
-     * Appel AJAX avec filtres (date, client).
-     * - Critère : AJAX natif, JSON structuré, BDD
-     */
     function fetchAppointmentsWithCallback(onSuccess, filters) {
         let url = "/api/appointments/";
         const params = new URLSearchParams();
@@ -191,10 +159,6 @@
             });
     }
 
-    /**
-     * Callback d'événement : clic sur "Filtrer (AJAX)".
-     * - Démo d'asynchronisme : logs A / C / B
-     */
     function handleRefreshClick() {
         const filterDate = filterDateInput ? filterDateInput.value : "";
         const filterClient = filterClientInput ? filterClientInput.value.trim() : "";
@@ -215,7 +179,6 @@
         console.log("Après l'appel fetch (C – s'affiche AVANT B => asynchronisme)");
     }
 
-    // Callback d'événement : clic utilisateur
     refreshButton.addEventListener("click", handleRefreshClick);
 
 })();
