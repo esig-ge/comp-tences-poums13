@@ -9,21 +9,31 @@
     const filterDateInput = document.getElementById("filter-date");
     const filterClientInput = document.getElementById("filter-client");
 
+    const modeButton = document.getElementById("toggle-async-sync");
+    const modeLabel = document.getElementById("mode-label");
+
     const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
     const csrfToken = csrfInput ? csrfInput.value : null;
 
     let cachedAppointments = [];
+    let requestMode = "async"; 
 
     if (!tableBody || !refreshButton) {
         console.warn("barber.js: éléments DOM manquants, script interrompu.");
         return;
     }
 
+    function clearTableBody() {
+        while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+        }
+    }
+
     function renderAppointments(appointments) {
         cachedAppointments = appointments;
-        tableBody.innerHTML = "";
+        clearTableBody();
 
-        if (appointments.length === 0) {
+        if (!appointments || appointments.length === 0) {
             const row = document.createElement("tr");
             const cell = document.createElement("td");
             cell.colSpan = 5;
@@ -41,8 +51,10 @@
             clientSpan.classList.add("client-name");
             clientSpan.textContent = appt.client;
 
-            if (config.highlightImportantClients &&
-                config.importantClients.includes(appt.client)) {
+            if (
+                config.highlightImportantClients &&
+                config.importantClients.includes(appt.client)
+            ) {
                 clientSpan.style.fontWeight = "bold";
             }
 
@@ -72,6 +84,7 @@
                 editBtn.classList.add("btn", "small", "ghost");
                 editBtn.textContent = "Modifier";
 
+                // callback (event)
                 editBtn.addEventListener("click", function () {
                     if (typeof editAppointment === "function") {
                         editAppointment(
@@ -120,62 +133,130 @@
 
     function withLogging(actionName, callback) {
         console.log("[BarberWeb]", actionName);
-
-        if (typeof callback === "function") {
-            callback();
-        } else {
-            console.warn("withLogging appelé sans fonction valide.");
-        }
+        if (typeof callback === "function") callback();
+        else console.warn("withLogging appelé sans fonction valide.");
     }
 
-    function fetchAppointmentsWithCallback(onSuccess, filters) {
+    function buildAppointmentsUrl(filters) {
         let url = "/api/appointments/";
         const params = new URLSearchParams();
 
-        if (filters && filters.date) {
-            params.append("date", filters.date);
-        }
-        if (filters && filters.client) {
-            params.append("client", filters.client);
-        }
+        if (filters && filters.date) params.append("date", filters.date);
+        if (filters && filters.client) params.append("client", filters.client);
 
-        const queryString = params.toString();
-        if (queryString) {
-            url += "?" + queryString;
-        }
-
-        fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
-                const appointments = data.appointments || [];
-
-                if (typeof onSuccess === "function") {
-                    onSuccess(appointments);
-                }
-            })
-            .catch((error) => {
-                console.error("Erreur lors du chargement AJAX des rendez-vous:", error);
-            });
+        const qs = params.toString();
+        if (qs) url += "?" + qs;
+        return url;
     }
+
+    function fetchAppointmentsAsync(onSuccess, filters) {
+        const url = buildAppointmentsUrl(filters);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) return;
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+                let data = {};
+                try {
+                    data = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+                } catch (e) {
+                    console.error("JSON invalide:", e, xhr.responseText);
+                    return;
+                }
+
+                const appointments = data.appointments || [];
+                if (typeof onSuccess === "function") onSuccess(appointments);
+            } else {
+                console.error("Erreur AJAX async:", xhr.status, xhr.responseText);
+            }
+        };
+
+        xhr.onerror = function () {
+            console.error("Erreur réseau AJAX async (XHR).");
+        };
+
+        xhr.send(null);
+    }
+    function fetchAppointmentsSync(filters) {
+        const url = buildAppointmentsUrl(filters);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", url, false);
+        try {
+            xhr.send(null);
+        } catch (e) {
+            console.error("Erreur AJAX sync:", e);
+            return [];
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const data = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+                return data.appointments || [];
+            } catch (e) {
+                console.error("JSON invalide (sync):", e, xhr.responseText);
+                return [];
+            }
+        } else {
+            console.error("Erreur AJAX sync:", xhr.status, xhr.responseText);
+            return [];
+        }
+    }
+
+    function updateModeUI() {
+        if (modeLabel) {
+            modeLabel.textContent = requestMode.toUpperCase();
+        }
+        if (modeButton) {
+            modeButton.textContent =
+                requestMode === "async"
+                    ? "Passer en SYNC (démo)"
+                    : "Passer en ASYNC";
+        }
+        console.log("[BarberWeb] Mode actuel =", requestMode.toUpperCase());
+    }
+
+    function handleToggleModeClick() {
+        requestMode = requestMode === "async" ? "sync" : "async";
+        updateModeUI();
+    }
+
+    if (modeButton) {
+        modeButton.addEventListener("click", handleToggleModeClick);
+    }
+
+    updateModeUI();
 
     function handleRefreshClick() {
         const filterDate = filterDateInput ? filterDateInput.value : "";
         const filterClient = filterClientInput ? filterClientInput.value.trim() : "";
 
-        console.log("Avant l'appel AJAX (A)");
+        const filters = { date: filterDate, client: filterClient };
 
-        fetchAppointmentsWithCallback(function (appointments) {
-            console.log("Réponse AJAX reçue (B)");
+        if (requestMode === "async") {
+            console.log("ASYNC: A (avant appel XHR)");
+            fetchAppointmentsAsync(function (appointments) {
+                console.log("ASYNC: C (callback - réponse reçue)");
 
-            withLogging("Rendu des rendez-vous filtrés", function () {
+                withLogging("Rendu des rendez-vous filtrés (async)", function () {
+                    renderAppointments(appointments);
+                });
+            }, filters);
+            console.log("ASYNC: B (après appel XHR) => s'affiche AVANT C");
+        } else {
+            console.log("SYNC: A (avant appel XHR - bloquant)");
+            const appointments = fetchAppointmentsSync(filters);
+            console.log("SYNC: B (après appel XHR) => s'affiche APRÈS la réponse");
+
+            withLogging("Rendu des rendez-vous filtrés (sync)", function () {
                 renderAppointments(appointments);
             });
-        }, {
-            date: filterDate,
-            client: filterClient
-        });
 
-        console.log("Après l'appel fetch (C – s'affiche AVANT B => asynchronisme)");
+            console.log("SYNC: C (fin) => tout arrive après B");
+        }
     }
 
     refreshButton.addEventListener("click", handleRefreshClick);
