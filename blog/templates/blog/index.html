@@ -5,139 +5,181 @@
 
 {% block content %}
 
-<section class="content">
-    <section class="card">
+<!-- SHELL pour que le contenu reste propre -->
+<div class="app-shell" id="app-shell">
+  <main class="app-main" id="app-main">
+
+    <section class="content">
+      <section class="card">
         <div class="card-header">
-            <div>
-                <h1>Planning de rendez-vous</h1>
-            </div>
+          <div>
+            <h1>Planning de rendez-vous</h1>
+          </div>
 
-            <!-- Barre d’actions JS / AJAX avec filtres -->
-            <div class="card-actions" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                <input type="date" id="filter-date">
+          <div class="card-actions" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input type="date" id="filter-date">
 
-                <input
-                    type="text"
-                    id="filter-client"
-                    placeholder="Filtrer par client"
-                    style="min-width:160px;"
-                >
+            <input
+              type="text"
+              id="filter-client"
+              placeholder="Filtrer par client"
+              style="min-width:160px;"
+            >
 
-                <button type="button" class="btn small ghost" id="refresh-ajax">
-                    Filtrer
-                </button>
-            </div>
+            <button type="button" class="btn small ghost" id="refresh-ajax">
+              Filtrer
+            </button>
+          </div>
         </div>
 
         <div class="table-wrapper">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>Client</th>
-                    <th>Date</th>
-                    <th>Heure</th>
-                    <th>Commentaires</th>
-                    <th class="th-actions">Actions</th>
-                </tr>
-                </thead>
-                <tbody id="appointments-body">
-                {# contenu initial rendu côté serveur #}
-                {% for appt in appointments %}
-                    <tr>
-                        <td><span class="client-name">{{ appt.client }}</span></td>
-                        <td>{{ appt.date|date:"d/m/Y" }}</td>
-                        <td>{{ appt.time|time:"H:i" }}</td>
-                        <td>{{ appt.notes }}</td>
-                        <td class="actions">
-                            <!-- MODIFIER -->
-                            <button type="button" class="btn small ghost"
-                                    onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
-                                                             '{{ appt.date }}', '{{ appt.time }}',
-                                                             `{{ appt.notes|default:'' }}`)">
-                                Modifier
-                            </button>
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Heure</th>
+              <th>Commentaires</th>
+              <th class="th-actions">Actions</th>
+            </tr>
+            </thead>
+            <tbody id="appointments-body">
+            {% for appt in appointments %}
+              <tr>
+                <td><span class="client-name">{{ appt.client }}</span></td>
+                <td>{{ appt.date|date:"d/m/Y" }}</td>
+                <td>{{ appt.time|time:"H:i" }}</td>
+                <td>{{ appt.notes }}</td>
+                <td class="actions">
+                  <button type="button" class="btn small ghost"
+                          onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
+                                                   '{{ appt.date }}', '{{ appt.time }}',
+                                                   `{{ appt.notes|default:'' }}`)">
+                    Modifier
+                  </button>
 
-                            <!-- SUPPRIMER -->
-                            <form method="post" style="display:inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="delete_id" value="{{ appt.id }}">
-                                <button type="submit" class="btn small danger">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="5">Aucun rendez-vous pour l’instant.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                  <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_id" value="{{ appt.id }}">
+                    <button type="submit" class="btn small danger">Supprimer</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5">Aucun rendez-vous pour l’instant.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
         </div>
-    </section>
+      </section>
 
-    <!-- FORMULAIRE AJOUT / MODIF -->
-    <section class="card" id="form-section">
+      <section class="card" id="form-section">
         <div class="card-header">
-            <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
+          <div><h2 id="form-title">Ajouter un rendez-vous</h2></div>
         </div>
 
         <form method="post" class="form-grid" id="appointment-form">
-            {% csrf_token %}
-            <!-- champ caché pour l'id -->
-            <input type="hidden" name="id" id="form-id" value="">
+          {% csrf_token %}
+          <input type="hidden" name="id" id="form-id" value="">
 
-            <div class="form-group">
-                <label for="{{ form.client.id_for_label }}">Nom du client</label>
-                {{ form.client }}
-                {{ form.client.errors }}
-            </div>
+          <div class="form-group">
+            <label for="{{ form.client.id_for_label }}">Nom du client</label>
+            {{ form.client }}
+            {{ form.client.errors }}
+          </div>
 
-            <div class="form-group">
-                <label for="{{ form.date.id_for_label }}">Date</label>
-                {{ form.date }}
-                {{ form.date.errors }}
-            </div>
+          <div class="form-group">
+            <label for="{{ form.date.id_for_label }}">Date</label>
+            {{ form.date }}
+            {{ form.date.errors }}
+          </div>
 
-            <div class="form-group">
-                <label for="{{ form.time.id_for_label }}">Heure</label>
-                {{ form.time }}
-                {{ form.time.errors }}
-            </div>
+          <div class="form-group">
+            <label for="{{ form.time.id_for_label }}">Heure</label>
+            {{ form.time }}
+            {{ form.time.errors }}
+          </div>
 
-            <div class="form-group full">
-                <label for="{{ form.notes.id_for_label }}">Commentaires</label>
-                {{ form.notes }}
-                {{ form.notes.errors }}
-            </div>
+          <div class="form-group full">
+            <label for="{{ form.notes.id_for_label }}">Commentaires</label>
+            {{ form.notes }}
+            {{ form.notes.errors }}
+          </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn primary">Enregistrer</button>
-                <button type="button" class="btn ghost" onclick="resetForm()">Annuler</button>
-            </div>
+          <div class="form-actions">
+            <button type="submit" class="btn primary">Enregistrer</button>
+            <button type="button" class="btn ghost" onclick="resetForm()">Annuler</button>
+          </div>
         </form>
+      </section>
     </section>
-</section>
+
+  </main>
+</div>
+
+<!-- COPILOT DOCK RIGHT -->
+<aside id="copilot" class="copilot" aria-hidden="true">
+  <div class="copilot-panel">
+    <div class="copilot-top">
+      <div class="copilot-title">COPIBARBER</div>
+          <div class="copilot-tag">Chat IA</div>
+    </div>
+
+    <div class="copilot-body">
+
+      <div class="copilot-bubble">
+        Salut, décris un rendez-vous et je remplis le formulaire.
+      </div>
+
+      <pre id="copilot-output" class="copilot-output"></pre>
+    </div>
+
+    <div class="copilot-footer">
+      <div class="copilot-inputrow">
+        <input id="copilot-input" class="copilot-input"
+               type="text" placeholder="Décris le rendez-vous…" />
+
+        <!-- 1) Analyser -->
+        <button id="copilot-submit" class="copilot-icon" title="Analyser le texte">➤</button>
+      </div>
+
+      <div class="copilot-actions-icons">
+        <!-- 2) Remplir -->
+        <button id="copilot-fill" class="copilot-icon" title="Remplir le formulaire">🧠</button>
+
+        <!-- 3) Enregistrer -->
+        <button id="copilot-save" class="copilot-icon" title="Enregistrer le rendez-vous">💾</button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Bouton IA (hors du chat, toujours visible) -->
+<button id="copilot-fab" type="button" class="copilot-fab" aria-controls="copilot" aria-expanded="false">
+  IA
+</button>
 
 <script>
 function editAppointment(id, client, date, time, notes) {
-    document.getElementById("form-title").innerText = "Modifier un rendez-vous";
-    document.getElementById("form-id").value = id;
-    document.getElementById("id_client").value = client;
-    document.getElementById("id_date").value = date;
-    document.getElementById("id_time").value = time;
-    document.getElementById("id_notes").value = notes;
-    document.getElementById("form-section").scrollIntoView({behavior: 'smooth'});
+  document.getElementById("form-title").innerText = "Modifier un rendez-vous";
+  document.getElementById("form-id").value = id;
+  document.getElementById("id_client").value = client;
+  document.getElementById("id_date").value = date;
+  document.getElementById("id_time").value = time;
+  document.getElementById("id_notes").value = notes;
+  document.getElementById("form-section").scrollIntoView({behavior: 'smooth'});
 }
 
 function resetForm() {
-    document.getElementById("form-title").innerText = "Ajouter un rendez-vous";
-    document.getElementById("form-id").value = "";
-    document.getElementById("id_client").value = "";
-    document.getElementById("id_date").value = "";
-    document.getElementById("id_time").value = "";
-    document.getElementById("id_notes").value = "";
+  document.getElementById("form-title").innerText = "Ajouter un rendez-vous";
+  document.getElementById("form-id").value = "";
+  document.getElementById("id_client").value = "";
+  document.getElementById("id_date").value = "";
+  document.getElementById("id_time").value = "";
+  document.getElementById("id_notes").value = "";
 }
 </script>
 
-<!-- Inclusion du JS dédié (DOM + AJAX) -->
 <script src="{% static 'blog/js/barber.js' %}"></script>
 
 {% endblock %}
