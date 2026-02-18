@@ -55,7 +55,19 @@
                         <td><span class="client-name">{{ appt.client }}</span></td>
                         <td>{{ appt.date|date:"d/m/Y" }}</td>
                         <td>{{ appt.time|time:"H:i" }}</td>
-                        <td>{{ appt.notes }}</td>
+                        <td>
+                            <!-- =============================== -->
+                            <!-- DÉMONSTRATION XSS – STORED XSS  -->
+                            <!-- =============================== -->
+
+                            <!-- VERSION VULNÉRABLE -->
+                            <!-- Supprime l'échappement automatique et permet l'exécution de script -->
+                            <!-- {{ appt.notes|safe }} -->
+
+                            <!-- VERSION SÉCURISÉE (ACTIVE PAR DÉFAUT) -->
+                            <!-- Django échappe automatiquement les caractères HTML -->
+                            {{ appt.notes }}
+                        </td>
                         <td class="actions">
                             <!-- MODIFIER -->
                             <button type="button" class="btn small ghost"
