@@ -56,11 +56,17 @@
                         <td>{{ appt.date|date:"d/m/Y" }}</td>
                         <td>{{ appt.time|time:"H:i" }}</td>
                         <td>
-                            {# VERSION VULNÉRABLE — XSS : |safe désactive l'échappement HTML #}
-                            {{ appt.notes|safe }}
-                            
-                            <!-- {# VERSION SÉCURISÉE — FIX XSS : échappement auto Django actif #}
-                            {# {{ appt.notes }} #}-->
+                            <!-- =============================== -->
+                            <!-- DÉMONSTRATION XSS – STORED XSS  -->
+                            <!-- =============================== -->
+
+                            <!-- VERSION VULNÉRABLE -->
+                            <!-- Supprime l'échappement automatique et permet l'exécution de script -->
+                            <!-- {{ appt.notes|safe }} -->
+
+                            <!-- VERSION SÉCURISÉE -->
+                            <!-- Django échappe automatiquement les caractères HTML -->
+                            {{ appt.notes }}
                         </td>
                         <td class="actions">
                             <!-- MODIFIER -->
