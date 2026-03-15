@@ -37,3 +37,10 @@ class AppointmentForm(forms.ModelForm):
         if d < date.today():
             raise forms.ValidationError("La date ne peut pas être dans le passé.")
         return d
+
+    # XSS — aucun nettoyage du HTML dans les notes
+    # FIX XSS — décommenter pour supprimer les balises HTML
+    # def clean_notes(self):
+    #     import bleach
+    #     notes = self.cleaned_data.get("notes", "")
+    #     return bleach.clean(notes, tags=[], strip=True)

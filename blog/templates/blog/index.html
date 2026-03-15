@@ -56,24 +56,21 @@
                         <td>{{ appt.date|date:"d/m/Y" }}</td>
                         <td>{{ appt.time|time:"H:i" }}</td>
                         <td>
-                            <!-- =============================== -->
-                            <!-- DÉMONSTRATION XSS – STORED XSS  -->
-                            <!-- =============================== -->
-
-                            <!-- VERSION VULNÉRABLE -->
-                            <!-- Supprime l'échappement automatique et permet l'exécution de script -->
-                            <!-- {{ appt.notes|safe }} -->
-
-                            <!-- VERSION SÉCURISÉE (ACTIVE PAR DÉFAUT) -->
-                            <!-- Django échappe automatiquement les caractères HTML -->
-                            {{ appt.notes }}
+                            {# VERSION VULNÉRABLE — XSS : |safe désactive l'échappement HTML #}
+                            {{ appt.notes|safe }}
+                            
+                            <!-- {# VERSION SÉCURISÉE — FIX XSS : échappement auto Django actif #}
+                            {# {{ appt.notes }} #}-->
                         </td>
                         <td class="actions">
                             <!-- MODIFIER -->
                             <button type="button" class="btn small ghost"
-                                    onclick="editAppointment({{ appt.id }}, '{{ appt.client }}',
-                                                             '{{ appt.date }}', '{{ appt.time }}',
-                                                             `{{ appt.notes|default:'' }}`)">
+                                    data-id="{{ appt.id }}"
+                                    data-client="{{ appt.client|escape }}"
+                                    data-date="{{ appt.date|date:'Y-m-d' }}"
+                                    data-time="{{ appt.time|time:'H:i' }}"
+                                    data-notes="{{ appt.notes|default:''|escape }}"
+                                    onclick="editFromButton(this)">
                                 Modifier
                             </button>
 
@@ -137,6 +134,16 @@
 </section>
 
 <script>
+function editFromButton(button) {
+    editAppointment(
+        button.dataset.id,
+        button.dataset.client,
+        button.dataset.date,
+        button.dataset.time,
+        button.dataset.notes || ""
+    );
+}
+
 function editAppointment(id, client, date, time, notes) {
     document.getElementById("form-title").innerText = "Modifier un rendez-vous";
     document.getElementById("form-id").value = id;

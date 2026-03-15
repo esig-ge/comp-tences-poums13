@@ -67,7 +67,10 @@
     tr.appendChild(timeTd);
 
     var notesTd = document.createElement("td");
-    notesTd.textContent = appointment.notes || "";
+    // XSS — exécute le HTML brut
+    notesTd.innerHTML = appointment.notes || "";
+    // FIX XSS — utiliser textContent
+    // notesTd.textContent = appointment.notes || "";
     tr.appendChild(notesTd);
 
     var actionsTd = document.createElement("td");

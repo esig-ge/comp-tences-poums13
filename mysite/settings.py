@@ -126,3 +126,15 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# FIX XSS — Content Security Policy (nécessite django-csp dans requirements.txt)
+# Ajouter 'csp' dans INSTALLED_APPS et 'csp.middleware.CSPMiddleware' dans MIDDLEWARE
+# CSP_DEFAULT_SRC = ("'self'",)
+# CSP_SCRIPT_SRC  = ("'self'",)
+# CSP_STYLE_SRC   = ("'self'",)
+# CSP_IMG_SRC     = ("'self'", "data:")
+
+# FIX XSS — headers HTTP de sécurité complémentaires
+# SECURE_CONTENT_TYPE_NOSNIFF = True   # X-Content-Type-Options: nosniff
+# X_FRAME_OPTIONS = 'DENY'             # déjà géré par XFrameOptionsMiddleware
+# SECURE_BROWSER_XSS_FILTER = True     # X-XSS-Protection (legacy)

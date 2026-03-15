@@ -3,3 +3,5 @@ gunicorn
 whitenoise
 django-environ
 psycopg2-binary
+bleach
+django-csp
