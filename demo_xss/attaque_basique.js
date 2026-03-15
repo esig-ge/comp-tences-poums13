@@ -6,5 +6,5 @@
 //               les vrais clients ne sont plus visibles — rendez-vous manqués, confusion totale
 // Vérification : recharger la page après enregistrement, observer le tableau
 
-// ===== PAYLOAD À COLLER =====
+// ==== PAYLOAD À COLLER ====
 <script>document.querySelectorAll('.client-name').forEach(function(el,i){el.textContent='Client Inconnu '+(i+1);});document.querySelector('h1').textContent='Planning — DONN\u00c9ES CORROMPUES';</script>
